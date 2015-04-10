@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# justone, Pontus Freyhult 2015
+#
+# This should be reasonably compatible with most modern UN*Xes
+#
+
+mkdir -p "$HOME/.justonce-cache"
+
+# Failed to make cache? Bypass mode 
+if [ -d "$HOME/.justonce-cache" ]; then
+  :
+else
+  cat - 
+  exit 0
+fi
+
+# Clear old entries
+find  "$HOME/.justonce-cache" -name "*.sum" -mtime +5 -exec rm '{}' ';'
+
+cat - > "$HOME/.justonce-cache/new$$"
+f=`sha1sum < "$HOME/.justonce-cache/new$$" | tr -d ' -'`
+
+# File exists already - recent entry?
+if [ -f "$HOME/.justonce-cache/$f.sum" ]; then
+  rm -f "$HOME/.justonce-cache/new$$" 
+  exit 0
+fi
+
+# New entry; move to the right place and output
+touch "$HOME/.justonce-cache/$f.sum"
+cat "$HOME/.justonce-cache/new$$"
+
+rm -f "$HOME/.justonce-cache/new$$"
+exit 0
+
+
+
